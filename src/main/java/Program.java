@@ -1,5 +1,4 @@
 
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
 
@@ -12,7 +11,7 @@ import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.cscore.OpenCvLoader;
 import edu.wpi.first.math.jni.EigenJNI;
 import edu.wpi.first.util.WPIUtilJNI;
-import org.opencv.core.Mat;
+
 
 /**
  * Program
@@ -30,20 +29,23 @@ public class Program {
 
         CombinedRuntimeLoader.loadLibraries(Program.class, "wpiutiljni", "wpimathjni", "ntcorejni", Core.NATIVE_LIBRARY_NAME, "cscorejni");
 
+        Runtime.getRuntime().addShutdownHook(new Thread(ledController::close));
 
         while(true){
+
             try {
                 periodic();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
         }
 
 
 
     }
 
-
+    //hz in which the loops run
     private static final long updateLoopTime = 20;
     private static final long mainLoopTime = (int)(1000/120.0);
 
@@ -70,6 +72,10 @@ public class Program {
 
     }
 
+    /**
+     * handles temp patterns and applies patters
+     * @param currentTime current time
+     */
     public static void mainLoop(long currentTime){
         if(patterns.get(patterns.size()-1).done(currentTime)) patterns.remove(patterns.size()-1);
 
@@ -78,8 +84,11 @@ public class Program {
 
     }
 
+    /**
+     * runs the loop updating the pattern data
+     */
     public static void updateLoop(){
-        var newPattern = LedNetworkReciever.getInstance().periodic(ledController);
+        var newPattern = LedNetworkReciever.getInstance().periodic();
         if(newPattern.isEmpty()) return;
 
         //removing overlapping patterns
@@ -97,9 +106,17 @@ public class Program {
 
     }
 
+    /**'
+     *
+     * @param value the value to check
+     * @param start the start of the range
+     * @param end the end of the range
+     * @return true if value is within range
+     */
     private static boolean isWithin(int value, int start, int end){
         return value>=start && value<=end;
     }
+
 
 
 

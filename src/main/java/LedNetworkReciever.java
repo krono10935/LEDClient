@@ -4,9 +4,13 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 
 import java.util.Optional;
 
+
+/**
+ * receiver to get the pattern data from the network tables
+ */
 public class LedNetworkReciever {
 
-    private static final  boolean isReal = false;
+    private static final  boolean isReal = true;
     final NetworkTableEntry ledLineIDEntry;
     final NetworkTableEntry patternEntry;
     final NetworkTableEntry mainColorEntry;
@@ -46,7 +50,11 @@ public class LedNetworkReciever {
 
     }
 
-    public Optional<SmartLEDPattern> periodic(RP4LEDController ledController){
+    /**'
+     * periodic function to get pattern data from the network tables
+     * @return returns the new pattern if there is one
+     */
+    public Optional<SmartLEDPattern> periodic(){
         if(!hasChangeEntry.getBoolean(false)) return Optional.empty();
         var primaryColor = PatternsFactory.doubleArrayToColor(mainColorEntry.getDoubleArray(new double[]{0,0,0}));
         var secondaryColor = PatternsFactory.doubleArrayToColor(secondaryColorEntry.getDoubleArray(new double[]{0,0,0}));
