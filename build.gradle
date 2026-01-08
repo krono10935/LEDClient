@@ -59,3 +59,31 @@ shadowJar {
 wrapper {
     gradleVersion = '8.11'
 }
+
+ext {
+    piUser = "krono"
+    piHost = "10.109.35.1"
+    piDir  = "/home/krono/leds"
+}
+
+tasks.register('deployToPi', Exec) {
+    dependsOn shadowJar
+
+    def jarFile = shadowJar.archiveFile.get().asFile
+    def remoteTmp = "${piDir}/${jarFile.name}"
+    def remoteCurrent = "${piDir}/current.jar"
+
+    commandLine 'bash', '-c', """
+        echo "Deploying ${jarFile.name} to ${piHost}"
+        scp ${jarFile.absolutePath} ${piUser}@${piHost}:${remoteTmp}
+        ssh ${piUser}@${piHost} '
+            ln -sf ${remoteTmp} ${remoteCurrent}
+            systemctl --user restart java-app || pkill -f java || true
+        '
+    """
+}
+
+
+
+
+

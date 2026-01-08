@@ -1,0 +1,21 @@
+#!/bin/bash
+
+APP_DIR="/home/pi/app"
+JAR="$APP_DIR/current.jar"
+LOG="$APP_DIR/app.log"
+
+echo "Starting Java supervisor..."
+
+while true; do
+    if [ ! -f "$JAR" ]; then
+        echo "Jar not found, waiting..." | tee -a "$LOG"
+        sleep 2
+        continue
+    fi
+
+    echo "Launching Java app..." | tee -a "$LOG"
+    java -jar "$JAR" >> "$LOG" 2>&1
+
+    echo "Java app exited. Restarting in 2s..." | tee -a "$LOG"
+    sleep 2
+done
