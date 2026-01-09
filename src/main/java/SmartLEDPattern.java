@@ -52,6 +52,10 @@ public class SmartLEDPattern {
         return end;
     }
 
+    public int getLength(){
+        return end-start;
+    }
+
 
 
 

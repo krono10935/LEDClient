@@ -3,12 +3,17 @@ import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
 
 import java.io.IOException;
+import java.security.cert.CollectionCertStoreParameters;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 
 import org.opencv.core.Core;
 
 import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.cscore.OpenCvLoader;
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.jni.EigenJNI;
 import edu.wpi.first.util.WPIUtilJNI;
 
@@ -77,9 +82,20 @@ public class Program {
      * @param currentTime current time
      */
     public static void mainLoop(long currentTime){
-        if(patterns.get(patterns.size()-1).done(currentTime)) patterns.remove(patterns.size()-1);
 
-        patterns.forEach(SmartLEDPattern::apply);
+        if(patterns.get(patterns.size()-1).done(currentTime)) patterns.remove(patterns.size()-1);
+        
+        int countLedsApplied = 0;
+
+        for (int i = patterns.size()-1; i >= 0; i--) {
+            
+            if(countLedsApplied >= ledController.getLength()) break;
+
+            countLedsApplied += patterns.get(i).getLength();
+        
+            patterns.get(i).apply();
+        }
+        
 
 
     }

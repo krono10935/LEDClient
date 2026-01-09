@@ -56,7 +56,9 @@ public class LedNetworkReciever {
      */
     public Optional<SmartLEDPattern> periodic(){
         if(!hasChangeEntry.getBoolean(false)) return Optional.empty();
-        var primaryColor = PatternsFactory.doubleArrayToColor(mainColorEntry.getDoubleArray(new double[]{0,0,0}));
+        
+        try{
+            var primaryColor = PatternsFactory.doubleArrayToColor(mainColorEntry.getDoubleArray(new double[]{0,0,0}));
         var secondaryColor = PatternsFactory.doubleArrayToColor(secondaryColorEntry.getDoubleArray(new double[]{0,0,0}));
         var pattern = PatternsFactory.fromNtData(patternEntry.getString("none"),
                 primaryColor, secondaryColor, (int)hzEntry.getDouble(0) );
@@ -68,8 +70,13 @@ public class LedNetworkReciever {
 
         SmartLEDPattern smartPattern = new SmartLEDPattern(pattern.get(),
                 (int)range[0],(int)range[1], timeOutEntry.getDouble(0));
-
+        
+        
         return Optional.of(smartPattern);
+        }
+        finally{
+            hasChangeEntry.setBoolean(false);
+        }
 
     }
 
