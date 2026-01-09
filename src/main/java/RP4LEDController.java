@@ -4,8 +4,8 @@ import edu.wpi.first.wpilibj.LEDReader;
 import edu.wpi.first.wpilibj.LEDWriter;
 
 public class RP4LEDController extends WS281x implements LEDReader, LEDWriter  {
-    public RP4LEDController(int i, int i1, int i2) {
-        super(i, i1, i2);
+    public RP4LEDController(int i, int i2) {
+        super(i, 255, i2);
     }
 
     @Override

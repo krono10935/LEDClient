@@ -62,7 +62,7 @@ wrapper {
 
 ext {
     piUser = "krono"
-    piHost = "10.109.35.1"
+    piHost = "10.157.27.131"
     piDir  = "/home/krono/leds"
 }
 

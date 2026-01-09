@@ -9,6 +9,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import edu.wpi.first.wpilibj.LEDPattern;
+import edu.wpi.first.wpilibj.util.Color;
 import org.opencv.core.Core;
 
 import edu.wpi.first.cscore.CameraServerJNI;
@@ -23,7 +25,7 @@ import edu.wpi.first.util.WPIUtilJNI;
  */
 public class Program {
 
-    public static final RP4LEDController ledController = new RP4LEDController(18, 23, 24);
+    public static final RP4LEDController ledController = new RP4LEDController(18, 5);
 
     public static void main(String[] args) throws IOException {
         NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
@@ -36,6 +38,7 @@ public class Program {
 
         Runtime.getRuntime().addShutdownHook(new Thread(ledController::close));
 
+        patterns.add(new SmartLEDPattern(LEDPattern.solid(Color.kAqua), 0, 5, 0));
         while(true){
 
             try {
