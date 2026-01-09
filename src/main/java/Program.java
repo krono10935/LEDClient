@@ -90,14 +90,17 @@ public class Program {
         
         int countLedsApplied = 0;
 
-        for (int i = patterns.size()-1; i >= 0; i--) {
-            
-            if(countLedsApplied >= ledController.getLength()) break;
-
-            countLedsApplied += patterns.get(i).getLength();
-        
-            patterns.get(i).apply();
-        }
+//        for (int i = patterns.size()-1; i >= 0; i--) {
+//
+//            if(countLedsApplied >= ledController.getLength()) break;
+//
+//            countLedsApplied += patterns.get(i).getLength();
+//
+//            patterns.get(i).apply();
+//        }
+        SmartLEDPattern aqua = new SmartLEDPattern(LEDPattern.solid(Color.kAqua), 0 ,5 , 0);
+        aqua.apply();
+        ledController.render();
         
 
 

@@ -1,3 +1,4 @@
+import com.diozero.devices.LED;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.util.Color;
 
@@ -54,6 +55,10 @@ public class PatternsFactory {
     }
 
     private PatternsFactory(){}
+
+    public static LEDPattern solidc(Color primaryColor, Color secondaryColor, int hz){
+        return LEDPattern.solid(Color.kAqua);
+    }
 
 
 }

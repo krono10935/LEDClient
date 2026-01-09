@@ -60,7 +60,7 @@ public class LedNetworkReciever {
         try{
             var primaryColor = PatternsFactory.doubleArrayToColor(mainColorEntry.getDoubleArray(new double[]{0,0,0}));
         var secondaryColor = PatternsFactory.doubleArrayToColor(secondaryColorEntry.getDoubleArray(new double[]{0,0,0}));
-        var pattern = PatternsFactory.fromNtData(patternEntry.getString("none"),
+        var pattern = PatternsFactory.fromNtData(patternEntry.getString("solidc"),
                 primaryColor, secondaryColor, (int)hzEntry.getDouble(0) );
 
         if(pattern.isEmpty()) return Optional.empty();
