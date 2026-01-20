@@ -1,7 +1,7 @@
 plugins {
     id "java"
     id 'application'
-    id 'com.gradleup.shadow' version '8.3.5'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
     id "edu.wpi.first.GradleRIO" version "2025.1.1"
     id 'edu.wpi.first.WpilibTools' version '2.1.0'
 }
@@ -20,21 +20,44 @@ def nativeTasks = wpilibTools.createExtractionTasks {
 }
 
 nativeTasks.addToSourceSetResources(sourceSets.main)
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
-nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())
+
+// This targets the task class directly to ensure we catch it regardless of name
+tasks.withType(edu.wpi.first.tools.FixupNativeResources).configureEach {
+    enabled = false
+}
+
+// Just to be safe, we also disable it by its known name
+tasks.configureEach { task ->
+    if (task.name.contains("fixupNativeResources")) {
+        task.enabled = false
+    }
+}
 
 dependencies {
+
+    def wpiVersion = wpi.versions.wpilibVersion.get()
+    def arm64 = "linuxarm64"
+
+    // Manually add the ARM64 natives to the extraction configuration
+    wpilibNatives "edu.wpi.first.ntcore:ntcore-jni:$wpiVersion:$arm64"
+    wpilibNatives "edu.wpi.first.wpiutil:wpiutil-jni:$wpiVersion:$arm64"
+    wpilibNatives "edu.wpi.first.wpinet:wpinet-jni:$wpiVersion:$arm64"
+    wpilibNatives "edu.wpi.first.hal:hal-jni:$wpiVersion:$arm64"
+//    wpilibNatives "edu.wpi.first.wpimath:wpimath-jni:$wpiVersion:$arm64"
+//    wpilibNatives "edu.wpi.first.cscore:cscore-jni:$wpiVersion:$arm64"
+//    wpilibNatives "edu.wpi.first.hal:hal-jni:$wpiVersion:$arm64"
+
+    // Keep your standard Java implementations
+    implementation wpilibTools.deps.wpilibJava("hal")
     implementation wpilibTools.deps.wpilibJava("wpiutil")
     implementation wpilibTools.deps.wpilibJava("wpimath")
     implementation wpilibTools.deps.wpilibJava("wpinet")
     implementation wpilibTools.deps.wpilibJava("ntcore")
     implementation wpilibTools.deps.wpilibJava("cscore")
     implementation wpilibTools.deps.wpilibJava("cameraserver")
-    implementation wpilibTools.deps.wpilibOpenCvJava("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())
+    implementation wpilibTools.deps.wpilibJava("wpilibj")
+    implementation wpilibTools.deps.wpilibJava("wpiunits")
+
 
     implementation group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: wpi.versions.jacksonVersion.get()
     implementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: wpi.versions.jacksonVersion.get()
@@ -42,28 +65,27 @@ dependencies {
 
     implementation 'com.diozero:diozero-core:1.4.1'
     implementation 'com.diozero:diozero-ws281x-java:1.4.1'
-    implementation wpilibTools.deps.wpilibJava("wpilibj")
 
 
     implementation group: "org.ejml", name: "ejml-simple", version: wpi.versions.ejmlVersion.get()
     implementation group: "us.hebi.quickbuf", name: "quickbuf-runtime", version: wpi.versions.quickbufVersion.get();
 }
 
-shadowJar {
-    archiveBaseName = "TestApplication"
-    archiveVersion = ""
-    exclude("module-info.class")
-    archiveClassifier.set(wpilibTools.currentPlatform.platformName)
-}
-
 wrapper {
     gradleVersion = '8.11'
 }
 
+
+tasks.shadowJar {
+    archiveClassifier.set("arm64")
+    mergeServiceFiles()
+    zip64 true
+}
+
 ext {
     piUser = "krono"
-    piHost = "10.109.35.202"
-    piDir  = "/home/krono/leds"
+    piHost = "192.168.1.61"
+    piDir  = "/home/krono/"
 }
 
 tasks.register('deployToPi', Exec) {
@@ -74,12 +96,14 @@ tasks.register('deployToPi', Exec) {
     def remoteCurrent = "${piDir}/current.jar"
 
     commandLine 'bash', '-c', """
-        echo "Deploying ${jarFile.name} to ${piHost}"
+        echo "1/2: Uploading ${jarFile.name} to ${piHost}..."
         scp ${jarFile.absolutePath} ${piUser}@${piHost}:${remoteTmp}
-        ssh ${piUser}@${piHost} '
-            ln -sf ${remoteTmp} ${remoteCurrent}
-            systemctl --user restart java-app || pkill -f java || true
-        '
+        
+        echo "2/2: Updating current.jar and restarting service..."
+        ssh ${piUser}@${piHost} "
+            mv ${remoteTmp} ${remoteCurrent} && 
+            sudo systemctl restart ledclient.service
+        "
     """
 }
 
@@ -87,6 +111,11 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
     }
+}
+
+tasks.register("copyDeps", Copy) {
+    from configurations.runtimeClasspath
+    into "$buildDir/deps"
 }
 
 

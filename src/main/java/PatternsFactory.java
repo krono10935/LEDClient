@@ -1,4 +1,4 @@
-import com.diozero.devices.LED;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.util.Color;
 
@@ -10,6 +10,8 @@ import java.util.Optional;
  */
 public class PatternsFactory {
 
+    private static final PatternsFactory instance = new PatternsFactory();
+
     /**
      * parses nt data to create a led pattern
      * uses reflection to call the correct method
@@ -19,29 +21,29 @@ public class PatternsFactory {
      * @param hz hz of the pattern
      * @return the pattern only if it exists in the factory
      */
-    public static Optional<LEDPattern> fromNtData(String patternName, Color primaryColor, Color secondaryColor, int hz){
+    public static Optional<LEDPattern> fromNtData(String patternName, Color primaryColor, Color secondaryColor, int hz, double brightness){
 
 
         for(Method method: PatternsFactory.class.getDeclaredMethods()){
             if(method.getName().equals(patternName)){
                 try {
-                    return Optional.of((LEDPattern)method.invoke(primaryColor, secondaryColor, hz));
+                    return Optional.of((LEDPattern)method.invoke(instance, primaryColor, secondaryColor, hz, brightness));
                 } catch (Exception e) {
                     return Optional.empty();
                 }
             }
         }
 
-
         return Optional.empty();
+
     }
 
-    public static LEDPattern rainbow(Color primaryColor, Color secondaryColor, int hz){
-        return LEDPattern.rainbow(255,255);
+    public LEDPattern rainbow(Color primaryColor, Color secondaryColor, int hz, double brightness){
+        return LEDPattern.rainbow(255,255).scrollAtRelativeSpeed(Units.Hertz.of(hz)).atBrightness(Units.Value.of(brightness));
     }
 
-    public static LEDPattern solid(Color primaryColor, Color secondaryColor, int hz){
-        return LEDPattern.solid(primaryColor);
+    public LEDPattern solid(Color primaryColor, Color secondaryColor, int hz, double brightness){
+        return LEDPattern.solid(primaryColor).atBrightness(Units.Value.of(brightness));
     }
 
 
@@ -55,10 +57,5 @@ public class PatternsFactory {
     }
 
     private PatternsFactory(){}
-
-    public static LEDPattern solidc(Color primaryColor, Color secondaryColor, int hz){
-        return LEDPattern.solid(Color.kAqua);
-    }
-
 
 }

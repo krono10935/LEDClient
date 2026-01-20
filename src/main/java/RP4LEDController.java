@@ -30,7 +30,7 @@ public class RP4LEDController extends WS281x implements LEDReader, LEDWriter  {
 
     @Override
     public void setRGB(int i, int i1, int i2, int i3) {
-        setPixelColourRGB(i, i1, i2, i3);
+        super.setPixelColourRGB(i, i1, i2, i3);
     }
 
     /**
