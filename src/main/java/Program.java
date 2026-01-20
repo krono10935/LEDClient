@@ -22,7 +22,7 @@ public class Program {
     /**
      * The receiver from the network of the LED
      */
-    public static LedNetworkReceiver receiver;
+    public static StructNetworkReceiver receiver;
 
     public static void main(String[] args) throws IOException {
 
@@ -31,7 +31,7 @@ public class Program {
         WPIMathJNI.Helper.setExtractOnStaticLoad(false);
         CombinedRuntimeLoader.loadLibraries(Program.class, "wpiutiljni", "wpimathjni", "ntcorejni");
 
-        receiver = new LedNetworkReceiver();
+        receiver = new StructNetworkReceiver();
 
         NetworkTableInstance.getDefault();
         ledController = new RP4LEDController(18, 21);
@@ -99,14 +99,16 @@ public class Program {
         var newPatternOptional = receiver.periodic();
         if (newPatternOptional.isEmpty()) return;
 
-        var newPattern = newPatternOptional.get();
+        var newPatterns = newPatternOptional.get();
 
-        if (!patterns.isEmpty() && newPattern.getTimeOut() == 0) {
-            //removing overlapping patterns
-            patterns.removeIf(pattern -> isWithin(newPattern.getStart(), newPattern.getEnd(), pattern.getStart(), pattern.getEnd()));
+        for(SmartLEDPattern newPattern : newPatterns){
+            if (!patterns.isEmpty() && newPattern.getTimeOut() == 0) {
+                //removing overlapping patterns
+                patterns.removeIf(pattern -> isWithin(newPattern.getStart(), newPattern.getEnd(), pattern.getStart(), pattern.getEnd()));
+            }
+
+            patterns.add(newPattern);
         }
-
-        patterns.add(newPattern);
     }
 
     /**
