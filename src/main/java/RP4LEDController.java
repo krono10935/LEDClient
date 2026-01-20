@@ -4,8 +4,13 @@ import edu.wpi.first.wpilibj.LEDReader;
 import edu.wpi.first.wpilibj.LEDWriter;
 
 public class RP4LEDController extends WS281x implements LEDReader, LEDWriter  {
-    public RP4LEDController(int i, int i2) {
-        super(i, 255, i2);
+    /**
+     * creates an LED controller
+     * @param gpioNum the id of the GPIO pin used for the LED comms
+     * @param ledCount The number of pixels connected to the pi
+     */
+    public RP4LEDController(int gpioNum, int ledCount) {
+        super(gpioNum, 255, ledCount);
     }
 
     @Override

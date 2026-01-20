@@ -10,7 +10,7 @@ import java.util.Optional;
  */
 public class LedNetworkReceiver {
 
-    private static final  boolean isReal = false;
+    private static final boolean isReal = false;
     final NetworkTableEntry ledLineIDEntry;
     final NetworkTableEntry patternEntry;
     final NetworkTableEntry mainColorEntry;
@@ -21,10 +21,10 @@ public class LedNetworkReceiver {
     final NetworkTableEntry timeOutEntry;
     final NetworkTableEntry brightness;
 
-    public LedNetworkReceiver(){
+    public LedNetworkReceiver() {
         NetworkTableInstance nt = NetworkTableInstance.getDefault();
 
-        if(isReal) nt.setServerTeam(10935);
+        if (isReal) nt.setServerTeam(10935);
         else nt.setServer("192.168.1.239");
 
         nt.startClient4("LED go brrrrrrrr :)");
@@ -41,37 +41,35 @@ public class LedNetworkReceiver {
         brightness = table.getEntry("brightness");
     }
 
-    /**'
+    /**
+     * '
      * periodic function to get pattern data from the network tables
+     *
      * @return returns the new pattern if there is one
      */
-    public Optional<SmartLEDPattern> periodic(){
-        if(!hasChangeEntry.getBoolean(false)) return Optional.empty();
-        
-        try{
-            var primaryColor = PatternsFactory.doubleArrayToColor(mainColorEntry.getDoubleArray(new double[]{0,0,0}));
-        var secondaryColor = PatternsFactory.doubleArrayToColor(secondaryColorEntry.getDoubleArray(new double[]{0,0,0}));
-        var pattern = PatternsFactory.fromNtData(patternEntry.getString("solid"),
-                primaryColor, secondaryColor, (int)hzEntry.getDouble(0), brightness.getDouble(1));
+    public Optional<SmartLEDPattern> periodic() {
+        if (!hasChangeEntry.getBoolean(false)) return Optional.empty();
 
-        if(pattern.isEmpty()) return Optional.empty();
+        try {
+            var primaryColor = PatternsFactory.doubleArrayToColor(mainColorEntry.getDoubleArray(new double[]{0, 0, 0}));
+            var secondaryColor = PatternsFactory.doubleArrayToColor(secondaryColorEntry.getDoubleArray(new double[]{0, 0, 0}));
+            var pattern = PatternsFactory.fromNtData(patternEntry.getString("solid_black"),
+                    primaryColor, secondaryColor, (int) hzEntry.getDouble(0), brightness.getDouble(1));
+
+            if (pattern.isEmpty()) return Optional.empty();
+
+            var range = (rangeEntry.getDoubleArray(new double[]{0, 0}));
+
+            SmartLEDPattern smartPattern = new SmartLEDPattern(pattern.get(),
+                    (int) range[0], (int) range[1], timeOutEntry.getDouble(0));
 
 
-        var range = (rangeEntry.getDoubleArray(new double[]{0,0}));
-
-        SmartLEDPattern smartPattern = new SmartLEDPattern(pattern.get(),
-                (int)range[0],(int)range[1], timeOutEntry.getDouble(0));
-        
-        
-        return Optional.of(smartPattern);
-        }
-        finally{
+            return Optional.of(smartPattern);
+        } finally {
             hasChangeEntry.setBoolean(false);
         }
 
     }
-
-
 
 
 }

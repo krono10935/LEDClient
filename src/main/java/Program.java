@@ -3,38 +3,40 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 
-import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.math.jni.WPIMathJNI;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
-import edu.wpi.first.wpilibj.LEDPattern;
-import edu.wpi.first.wpilibj.util.Color;
 
 
 /**
  * Program
  */
 public class Program {
+    /**
+     * The LED controller that controls the LED
+     */
     public static RP4LEDController ledController;
+
+    /**
+     * The receiver from the network of the LED
+     */
     public static LedNetworkReceiver receiver;
 
     public static void main(String[] args) throws IOException {
+
         NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
         WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
         WPIMathJNI.Helper.setExtractOnStaticLoad(false);
         CombinedRuntimeLoader.loadLibraries(Program.class, "wpiutiljni", "wpimathjni", "ntcorejni");
-
-
 
         receiver = new LedNetworkReceiver();
 
         NetworkTableInstance.getDefault();
         ledController = new RP4LEDController(18, 21);
 
-
-        while(true){
+        while (true) {
 
             try {
                 periodic();
@@ -49,7 +51,7 @@ public class Program {
 
     //hz in which the loops run
     private static final long updateLoopTime = 20;
-    private static final long mainLoopTime = (int)(1000/120.0);
+    private static final long mainLoopTime = (int) (1000 / 120.0);
 
     private static long nextUpdateLoop = 0;
     private static long nextMainLoop = 0;
@@ -60,13 +62,13 @@ public class Program {
         long currentTime = System.currentTimeMillis();
 
 
-        if(currentTime>nextUpdateLoop){
-            nextUpdateLoop+=updateLoopTime;
+        if (currentTime > nextUpdateLoop) {
+            nextUpdateLoop += updateLoopTime;
             updateLoop();
         }
 
-        if(currentTime>nextMainLoop){
-            nextMainLoop+=mainLoopTime;
+        if (currentTime > nextMainLoop) {
+            nextMainLoop += mainLoopTime;
             mainLoop(currentTime);
         }
 
@@ -76,22 +78,16 @@ public class Program {
 
     /**
      * handles temp patterns and applies patters
+     *
      * @param currentTime current time
      */
-    public static void mainLoop(long currentTime){
+    public static void mainLoop(long currentTime) {
 
-//        if(patterns.get(patterns.size()-1).done(currentTime)) patterns.remove(patterns.size()-1);
-        
-        int countLedsApplied = 0;
+        if (patterns.isEmpty()) return;
 
-        for (int i = patterns.size()-1; i >= 0; i--) {
+        patterns.removeIf(pattern -> pattern.done(currentTime));
 
-            if(countLedsApplied >= ledController.getLength()) break;
-
-            countLedsApplied += patterns.get(i).getLength();
-
-            patterns.get(i).apply();
-        }
+        patterns.forEach(SmartLEDPattern::apply);
         ledController.render();
 
     }
@@ -99,40 +95,32 @@ public class Program {
     /**
      * runs the loop updating the pattern data
      */
-    public static void updateLoop(){
-        var newPattern = receiver.periodic();
-        if(newPattern.isEmpty()) return;
+    public static void updateLoop() {
+        var newPatternOptional = receiver.periodic();
+        if (newPatternOptional.isEmpty()) return;
 
-        if(!patterns.isEmpty()){
+        var newPattern = newPatternOptional.get();
+
+        if (!patterns.isEmpty() && newPattern.getTimeOut() == 0) {
             //removing overlapping patterns
-        for(SmartLEDPattern pattern : patterns){
-            int patternStart = pattern.getStart();
-            int patternEnd = pattern.getEnd();
-            if(isWithin(newPattern.get().getStart(), patternStart, patternEnd)
-                    || isWithin(newPattern.get().getEnd(), patternStart, patternEnd)){
-                patterns.remove(pattern);
-            }
-        }
+            patterns.removeIf(pattern -> isWithin(newPattern.getStart(), newPattern.getEnd(), pattern.getStart(), pattern.getEnd()));
         }
 
-        patterns.add(newPattern.get());
-
-
+        patterns.add(newPattern);
     }
 
-    /**'
+    /**
+     * '
+     * Checks if the new LED range is within the old LED range.
      *
-     * @param value the value to check
-     * @param start the start of the range
-     * @param end the end of the range
+     * @param newStart the start of the new LED range
+     * @param newEnd   the end of the new LED range
+     * @param oldStart the start of the old LED range
+     * @param oldEnd   the end of the old LED range
      * @return true if value is within range
      */
-    private static boolean isWithin(int value, int start, int end){
-        return value>=start && value<=end;
+    private static boolean isWithin(int newStart, int newEnd, int oldStart, int oldEnd) {
+        return (newStart >= oldStart && newStart <= oldEnd) || (newEnd >= oldStart && newEnd <= oldEnd);
     }
-
-
-
-
 
 }

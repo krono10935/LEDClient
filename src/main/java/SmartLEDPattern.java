@@ -40,25 +40,32 @@ public class SmartLEDPattern {
         return currentTime - startTime >= timeOut;
     }
 
+    /**
+     * apply the pattern, should be called periodically
+     */
     public void apply(){
         pattern.applyTo(view);
     }
 
+    /**
+     * @return the starting index of the LED pattern
+     */
     public int getStart(){
         return start;
     }
 
+    /**
+     * @return the end index of the LED pattern
+     */
     public int getEnd(){
         return end;
     }
 
-    public int getLength(){
-        return end-start;
+    /**
+     * @return how much time the pattern needs to be alive in micro seconds
+     */
+    public long getTimeOut(){
+        return timeOut;
     }
-
-
-
-
-
 
 }
