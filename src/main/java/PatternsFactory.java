@@ -1,3 +1,5 @@
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.wpilibj.LEDPattern;
@@ -5,6 +7,7 @@ import edu.wpi.first.wpilibj.util.Color;
 
 import java.lang.reflect.Method;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 
 /**
  * factory to create led patterns
@@ -30,6 +33,8 @@ public class PatternsFactory {
      * The brightness of the LED pattern (0-1)
      */
     private Dimensionless brightness;
+
+    private final BooleanSupplier rslStatus;
 
     /**
      * parses nt data to create a LED pattern
@@ -101,6 +106,11 @@ public class PatternsFactory {
         return LEDPattern.solid(primaryColor).blink(Units.Seconds.of(1.0 / hz)).atBrightness(brightness);
     }
 
+    public LEDPattern rsl_blink(){
+        return LEDPattern.solid(primaryColor).synchronizedBlink(rslStatus).atBrightness(brightness)
+                .overlayOn(LEDPattern.solid(secondaryColor).atBrightness(brightness));
+    }
+
     /**
      * an empty led pattern, used for when there is no string attached
      * @return a turned off pattern
@@ -120,6 +130,8 @@ public class PatternsFactory {
     }
 
     private PatternsFactory() {
+        var entry = NetworkTableInstance.getDefault().getTable("Led").getEntry("RslStatus");
+        rslStatus = () -> entry.getBoolean(false);
     }
 
 }
