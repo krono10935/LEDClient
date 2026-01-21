@@ -1,11 +1,12 @@
-import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Dimensionless;
+import edu.wpi.first.units.measure.Frequency;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.util.Color;
 
 import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 
@@ -17,7 +18,7 @@ public class PatternsFactory {
     /**
      * The instance used for reflection
      */
-    private static final PatternsFactory instance = new PatternsFactory();
+    private static PatternsFactory instance;
 
     /**
      * The new primary color and secondary color
@@ -27,13 +28,16 @@ public class PatternsFactory {
     /**
      * how fast should the LED pattern move
      */
-    private int hz;
+    private Frequency hz;
 
     /**
      * The brightness of the LED pattern (0-1)
      */
     private Dimensionless brightness;
 
+    /**
+     * The supplier for the rsl status, used to sync the blink of the pattern with the rsl.
+     */
     private final BooleanSupplier rslStatus;
 
     /**
@@ -47,7 +51,11 @@ public class PatternsFactory {
      * @param brightness     how bright should the LED be (0-1)
      * @return the pattern only if it exists in the factory
      */
-    public static Optional<LEDPattern> fromNtData(String patternName, Color primaryColor, Color secondaryColor, int hz, double brightness) {
+    public static Optional<LEDPattern> fromNtData(String patternName, Color primaryColor, Color secondaryColor, double hz, double brightness) {
+        if(instance == null){
+            instance = new PatternsFactory();
+        }
+
         for (Method method : PatternsFactory.class.getDeclaredMethods()) {
             if (method.getName().equals(patternName)) {
                 setNewPatternParams(primaryColor, secondaryColor, hz, brightness);
@@ -72,10 +80,10 @@ public class PatternsFactory {
      * @param hz             the new refresh rate of the pattern
      * @param brightness     the new brightness of the pattern
      */
-    private static void setNewPatternParams(Color primaryColor, Color secondaryColor, int hz, double brightness) {
+    private static void setNewPatternParams(Color primaryColor, Color secondaryColor, double hz, double brightness) {
         instance.primaryColor = primaryColor;
         instance.secondaryColor = secondaryColor;
-        instance.hz = hz;
+        instance.hz = Units.Hertz.of(hz);
         instance.brightness = Units.Value.of(brightness);
     }
 
@@ -85,7 +93,7 @@ public class PatternsFactory {
      * @return a rainbow pattern
      */
     public LEDPattern rainbow() {
-        return LEDPattern.rainbow(255, 255).scrollAtRelativeSpeed(Units.Hertz.of(hz)).atBrightness(brightness);
+        return LEDPattern.rainbow(255, 255).scrollAtRelativeSpeed(hz).atBrightness(brightness);
     }
 
     /**
@@ -103,12 +111,21 @@ public class PatternsFactory {
      * @return a blinking pattern
      */
     public LEDPattern blink() {
-        return LEDPattern.solid(primaryColor).blink(Units.Seconds.of(1.0 / hz)).atBrightness(brightness);
+        return LEDPattern.solid(primaryColor).blink(hz.asPeriod()).atBrightness(brightness)
+                .overlayOn(LEDPattern.solid(secondaryColor).atBrightness(brightness));
     }
 
     public LEDPattern rsl_blink(){
         return LEDPattern.solid(primaryColor).synchronizedBlink(rslStatus).atBrightness(brightness)
                 .overlayOn(LEDPattern.solid(secondaryColor).atBrightness(brightness));
+    }
+
+    public LEDPattern skebob(){
+        var pattern = LEDPattern.steps(Map.of(0.00, primaryColor, 0.2, Color.kBlack)).scrollAtRelativeSpeed(hz).atBrightness(brightness);
+
+        var movingPattern = pattern.reversed();
+
+        return movingPattern.overlayOn(pattern).overlayOn(LEDPattern.solid(secondaryColor).atBrightness(brightness));
     }
 
     /**
@@ -117,16 +134,6 @@ public class PatternsFactory {
      */
     public LEDPattern solid_black() {
         return LEDPattern.kOff;
-    }
-
-
-    /**
-     *
-     * @param color Color in {r,g,b} format
-     * @return a wpilib color object
-     */
-    public static Color doubleArrayToColor(double[] color) {
-        return new Color(color[0], color[1], color[2]);
     }
 
     private PatternsFactory() {

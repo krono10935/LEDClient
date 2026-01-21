@@ -1,5 +1,6 @@
 
 import edu.wpi.first.util.struct.Struct;
+import edu.wpi.first.wpilibj.AddressableLEDBufferView;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.util.Color;
 import java.nio.ByteBuffer;
@@ -84,11 +85,16 @@ public record LedState(String pattern, Color mainColor, Color secondaryColor,
     };
 
 
-    public SmartLEDPattern toSmartLedPattern(){
-        var pattern = PatternsFactory.fromNtData(pattern(), mainColor(), secondaryColor(), (int)hz(), brightness());
+    /**
+     * converts this LedState to the format of SmartLEDPattern
+     * @param view The view to apply the pattern on (created from the LED controller)
+     * @return The SmartLEDPattern that represents this LED state
+     */
+    public SmartLEDPattern toSmartLedPattern(AddressableLEDBufferView view){
+        var pattern = PatternsFactory.fromNtData(pattern(), mainColor(), secondaryColor(), hz(), brightness());
 
         var realPattern = pattern.orElse(LEDPattern.kOff);
 
-        return new SmartLEDPattern(realPattern, start(), end(), timeout());
+        return new SmartLEDPattern(realPattern, view, start(), end(), timeout());
     }
 }

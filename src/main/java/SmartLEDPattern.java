@@ -6,11 +6,29 @@ import edu.wpi.first.wpilibj.LEDPattern;
  */
 public class SmartLEDPattern {
 
+    /**
+     * The pattern of this pattern
+     */
     private final LEDPattern pattern;
-    private final long timeOut; //ms
+    /**
+     * how much time should this pattern be alive in milliseconds
+     */
+    private final long timeOut;
+    /**
+     * The view this LED pattern is applied on
+     */
     private final AddressableLEDBufferView view;
+    /**
+     * The index of the first LED of this pattern
+     */
     private final int start;
+    /**
+     * The index of the last LED of this pattern
+     */
     private final int end;
+    /**
+     * The time this pattern started existing in milliseconds (used for timeout)
+     */
     private final long startTime;
 
 
@@ -21,9 +39,9 @@ public class SmartLEDPattern {
      * @param end end index
      * @param timeOutSeconds timeout in seconds (0 if no timeout)
      */
-    public SmartLEDPattern(LEDPattern pattern, int start, int end, double timeOutSeconds){
+    public SmartLEDPattern(LEDPattern pattern, AddressableLEDBufferView view, int start, int end, double timeOutSeconds){
         this.pattern = pattern;
-        this.view = Program.ledController.createView(start,end);
+        this.view = view;
         this.timeOut =(long)(1000*timeOutSeconds);
         this.startTime = System.currentTimeMillis();
         this.start = start;
