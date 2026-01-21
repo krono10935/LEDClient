@@ -93,7 +93,7 @@ public class PatternsFactory {
      * @return a rainbow pattern
      */
     public LEDPattern rainbow() {
-        return LEDPattern.rainbow(255, 255).scrollAtRelativeSpeed(hz).atBrightness(brightness);
+        return LEDPattern.rainbow(120, 255).scrollAtRelativeSpeed(hz).atBrightness(brightness);
     }
 
     /**

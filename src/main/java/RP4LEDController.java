@@ -6,7 +6,6 @@ import edu.wpi.first.wpilibj.LEDWriter;
 import java.util.ArrayList;
 
 public class RP4LEDController extends WS281x implements LEDReader, LEDWriter  {
-
     /**
      * The patterns on this LED strip
      */

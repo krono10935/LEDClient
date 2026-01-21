@@ -1,6 +1,5 @@
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 
 import edu.wpi.first.math.jni.WPIMathJNI;
@@ -17,7 +16,7 @@ public class Program {
     /**
      * The array of the LED controllers
      */
-    private static final ArrayList<RP4LEDController> ledStrips = new ArrayList<>();
+    private static final RP4LEDController ledStrip = new RP4LEDController(18, 22);;
 
     public static void main(String[] args) throws IOException {
         // Loads the wpilib native libraries
@@ -25,8 +24,6 @@ public class Program {
         WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
         WPIMathJNI.Helper.setExtractOnStaticLoad(false);
         CombinedRuntimeLoader.loadLibraries(Program.class, "wpiutiljni", "wpimathjni", "ntcorejni");
-
-        ledStrips.add(new RP4LEDController(18, 21));
 
         while (true) {
             try {
@@ -66,13 +63,13 @@ public class Program {
         // Checks if it's due to the run update loop
         if (currentTime > nextUpdateLoop) {
             nextUpdateLoop += updateLoopTime;
-            ledStrips.forEach(RP4LEDController::updateLoop);
+            ledStrip.updateLoop();
         }
 
         // Cheks if it's due to run the main loop
         if (currentTime > nextMainLoop) {
             nextMainLoop += mainLoopTime;
-            ledStrips.forEach(strip -> strip.mainLoop(currentTime));
+            ledStrip.mainLoop(currentTime);
         }
 
         // Sleeps until the closest next loop
