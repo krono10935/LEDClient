@@ -16,7 +16,7 @@ public class Program {
     /**
      * The array of the LED controllers
      */
-    private static final RP4LEDController ledStrip = new RP4LEDController(18, 22);;
+    private static final RP4LEDController ledStrip = new RP4LEDController(18, 300);
 
     public static void main(String[] args) throws IOException {
         // Loads the wpilib native libraries
@@ -61,13 +61,13 @@ public class Program {
         long currentTime = System.currentTimeMillis();
 
         // Checks if it's due to the run update loop
-        if (currentTime > nextUpdateLoop) {
+        if (currentTime >= nextUpdateLoop) {
             nextUpdateLoop += updateLoopTime;
             ledStrip.updateLoop();
         }
 
         // Cheks if it's due to run the main loop
-        if (currentTime > nextMainLoop) {
+        if (currentTime >= nextMainLoop) {
             nextMainLoop += mainLoopTime;
             ledStrip.mainLoop(currentTime);
         }

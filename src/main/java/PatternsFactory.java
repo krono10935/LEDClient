@@ -128,6 +128,35 @@ public class PatternsFactory {
         return movingPattern.overlayOn(pattern).overlayOn(LEDPattern.solid(secondaryColor).atBrightness(brightness));
     }
 
+    public LEDPattern captain_usa(){
+        var pattern = LEDPattern.steps(Map.of(0.00, primaryColor, 0.5, secondaryColor)).scrollAtRelativeSpeed(hz).atBrightness(brightness);
+
+        var movingPattern = pattern.breathe(hz.asPeriod());
+
+        return movingPattern;
+    }
+
+    public LEDPattern blue_pulse(){
+        var pattern = LEDPattern.steps(Map.of(0.00, Color.kGray,0.35, Color.kWhiteSmoke,0.7, Color.kGreen )).scrollAtRelativeSpeed(hz);
+        var pattern1 = LEDPattern.steps(Map.of(0.00, Color.kDarkGray , 0.35 , Color.kWhite,0.7 , Color.kDarkBlue)).scrollAtRelativeSpeed(hz);
+        var breathe = pattern1.blink(hz.asPeriod());
+
+        var patterns = LEDPattern.gradient(LEDPattern.GradientType.kContinuous, Color.kDarkGray, Color.kWhite);
+
+        return LEDPattern.solid(Color.kGray);
+
+//        return breathe.overlayOn(pattern).atBrightness(brightness);
+    }
+
+    public LEDPattern brwon(){
+        var pattern = LEDPattern.steps(Map.of(0.0,Color.kDarkRed,0.3,Color.kOrange,0.55, Color.kYellow,0.8,Color.kBlack)).scrollAtRelativeSpeed(hz);
+
+        var reverse = pattern.reversed();
+        var breathing = pattern.breathe(hz.times(0.8).asPeriod());
+        
+        return breathing.overlayOn(reverse).atBrightness(brightness);
+    }
+
     /**
      * an empty led pattern, used for when there is no string attached
      * @return a turned off pattern

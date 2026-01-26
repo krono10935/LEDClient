@@ -8,7 +8,7 @@ public class StructNetworkReceiver {
     /**
      * If the receiver should connect to the robot or a test pc
      */
-    private static final boolean isReal = false;
+    private static final boolean isReal = true;
     /**
      * If the client has started, as it is shared for all the receivers
      */
@@ -70,6 +70,8 @@ public class StructNetworkReceiver {
         timeStamp = arrayAtomic.timestamp;
 
         var array = arrayAtomic.value;
+
+        System.out.println("recived LED command");
 
         if(array.length == 0) return Optional.empty();
 

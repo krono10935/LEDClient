@@ -41,12 +41,12 @@ public class RP4LEDController extends WS281x implements LEDReader, LEDWriter  {
 
     @Override
     public int getRed(int i) {
-        return this.getRedComponent(i);
+        return getGreenComponent(i);
     }
 
     @Override
     public int getGreen(int i) {
-        return getGreenComponent(i);
+        return getRedComponent(i);
     }
 
     @Override
@@ -56,7 +56,7 @@ public class RP4LEDController extends WS281x implements LEDReader, LEDWriter  {
 
     @Override
     public void setRGB(int i, int i1, int i2, int i3) {
-        super.setPixelColourRGB(i, i1, i2, i3);
+        super.setPixelColourRGB(i, i2, i1, i3);
     }
 
     /**
